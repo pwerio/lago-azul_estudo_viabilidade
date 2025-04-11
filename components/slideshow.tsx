@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 const slides = [
   {
     id: 1,
-    src: "/placeholder.svg?height=600&width=800",
+    src: "/lagoazul_corretor.png",
     alt: "slide1_800x600",
   },
   {
