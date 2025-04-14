@@ -222,7 +222,6 @@ export default function LeadRegistrationForm() {
                       <SelectItem value="Vladimir Lima">Vladimir Lima</SelectItem>
                       <SelectItem value="Anderson Bertola">Anderson Bertola</SelectItem>
                       <SelectItem value="William Fidencio">William Fidencio</SelectItem>
-                      <SelectItem value="Paula Martins">Paula Martins</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
