@@ -218,10 +218,10 @@ export default function LeadRegistrationForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="William">William</SelectItem>
-                      <SelectItem value="Fábio">Fábio</SelectItem>
-                      <SelectItem value="Maria Fernanda">Maria Fernanda</SelectItem>
-                      <SelectItem value="Paula">Paula</SelectItem>
+                      <SelectItem value="Anderson Bertola">Anderson Bertola</SelectItem>
+                      <SelectItem value="William Fidencio">William Fidencio</SelectItem>
+                      <SelectItem value="Maria Fernanda Martins">Maria Fernanda Martins</SelectItem>
+                      <SelectItem value="Paula Martins">Paula Martins</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
