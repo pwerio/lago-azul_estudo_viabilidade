@@ -16,21 +16,25 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 // Agent data mapping - can be replaced with real data later
 const agentData = {
-  William: {
+  Anderson Bertola: {
     phone: "(11)98765-4321",
-    email: "william@skanhous.com.br",
+    email: "anderson.bertola@lagoazul.com.br",
   },
-  Fábio: {
+  William Fidencio: {
     phone: "(11)91234-5678",
-    email: "fabio@skanhous.com.br",
+    email: "william.fidencio@lagoazul.com.br",
   },
-  "Maria Fernanda": {
+  "Maria Rosa": {
     phone: "(11)99876-5432",
-    email: "mariafernanda@skanhous.com.br",
+    email: "maria.rosa@lagoazul.com.br",
   },
-  Paula: {
+  Vladimir Lima: {
     phone: "(11)95555-4444",
-    email: "paula@skanhous.com.br",
+    email: "vladimir.lima@lagoazul.com.br",
+  },
+    Eric Nice: {
+    phone: "(11)95050-7175",
+    email: "skanhous@gmail.com",
   },
 }
 
