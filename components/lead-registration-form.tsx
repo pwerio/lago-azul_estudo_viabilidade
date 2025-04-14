@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -14,6 +14,26 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 
+// Agent data mapping - can be replaced with real data later
+const agentData = {
+  William: {
+    phone: "(11)98765-4321",
+    email: "william@skanhous.com.br",
+  },
+  Fábio: {
+    phone: "(11)91234-5678",
+    email: "fabio@skanhous.com.br",
+  },
+  "Maria Fernanda": {
+    phone: "(11)99876-5432",
+    email: "mariafernanda@skanhous.com.br",
+  },
+  Paula: {
+    phone: "(11)95555-4444",
+    email: "paula@skanhous.com.br",
+  },
+}
+
 const formSchema = z.object({
   clientName: z
     .string()
@@ -24,6 +44,8 @@ const formSchema = z.object({
   clientPhone: z.string().min(1, "Telefone é obrigatório"),
   clientEmail: z.string().min(1, "Email é obrigatório").email("Email inválido"),
   agentName: z.string().min(1, "Selecione um corretor"),
+  agentPhone: z.string().min(1, "Telefone do corretor é obrigatório"),
+  agentEmail: z.string().min(1, "Email do corretor é obrigatório").email("Email inválido"),
   propertyInterest: z.string().min(1, "Informe o lote/quadra de interesse"),
   observations: z.string().optional(),
   confirmation: z.literal(true, {
@@ -47,21 +69,39 @@ export default function LeadRegistrationForm() {
       clientPhone: "",
       clientEmail: "",
       agentName: "",
+      agentPhone: "",
+      agentEmail: "",
       propertyInterest: "",
       observations: "",
       confirmation: false,
     },
   })
 
+  // Watch for changes to agentName to auto-populate other fields
+  const selectedAgent = form.watch("agentName")
+
+  useEffect(() => {
+    if (selectedAgent && agentData[selectedAgent]) {
+      form.setValue("agentPhone", agentData[selectedAgent].phone)
+      form.setValue("agentEmail", agentData[selectedAgent].email)
+    }
+  }, [selectedAgent, form])
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
 
     try {
+      // Format agent data for Make.com
+      const formattedData = {
+        ...data,
+        agentFullInfo: `${data.agentName} - ${data.agentPhone} - ${data.agentEmail}`,
+      }
+
       // Integration with Make.com API
       const response = await fetch("https://hook.us2.make.com/a2bodn21dbv4ecftcz778twwohe2k9ao", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formattedData),
       })
 
       if (!response.ok) {
@@ -116,167 +156,232 @@ export default function LeadRegistrationForm() {
       ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="clientName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome do Cliente</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Nome e sobrenome"
-                      {...field}
-                      className={`rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
-                        form.formState.errors.clientName ? "border-red-500" : ""
-                      }`}
-                      onBlur={(e) => {
-                        field.onBlur()
-                        form.trigger("clientName")
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-6">
+              <h2 className="text-lg font-medium text-gray-900">Informações do Cliente</h2>
 
-            <FormField
-              control={form.control}
-              name="clientPhone"
-              render={({ field: { onChange, ...field } }) => (
-                <FormItem>
-                  <FormLabel>Telefone/WhatsApp do Cliente</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="(00)00000-0000"
-                      {...field}
-                      onChange={(e) => {
-                        const formatted = formatPhoneNumber(e.target.value)
-                        e.target.value = formatted
-                        onChange(e)
-                      }}
-                      className="rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="clientEmail"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email do Cliente</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="email@exemplo.com"
-                      {...field}
-                      className={`rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
-                        form.formState.errors.clientEmail ? "border-red-500" : ""
-                      }`}
-                      onBlur={(e) => {
-                        field.onBlur()
-                        form.trigger("clientEmail")
-                      }}
-                      onChange={(e) => {
-                        field.onChange(e)
-                        if (e.target.value.includes("@")) {
-                          form.trigger("clientEmail")
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="agentName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome do Corretor</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value)
-                      form.trigger("agentName")
-                    }}
-                    defaultValue={field.value}
-                  >
+              <FormField
+                control={form.control}
+                name="clientName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome do Cliente</FormLabel>
                     <FormControl>
-                      <SelectTrigger
+                      <Input
+                        placeholder="Nome e sobrenome"
+                        {...field}
                         className={`rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
-                          form.formState.errors.agentName ? "border-red-500" : ""
+                          form.formState.errors.clientName ? "border-red-500" : ""
                         }`}
-                      >
-                        <SelectValue placeholder="Selecione um corretor" />
-                        <ChevronDown className="h-4 w-4 opacity-50" />
-                      </SelectTrigger>
+                        onBlur={(e) => {
+                          field.onBlur()
+                          form.trigger("clientName")
+                        }}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Maria Rosa">Maria Rosa</SelectItem>
-                      <SelectItem value="Vladimir Lima">Vladimir Lima</SelectItem>
-                      <SelectItem value="Anderson Bertola">Anderson Bertola</SelectItem>
-                      <SelectItem value="William Fidencio">William Fidencio</SelectItem>
-                      <SelectItem value="Eric Nice">Eric Nice - (11) 95050 7175 - ericnice1@gmail.com</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="propertyInterest"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Terreno de Interesse (Lote/Quadra)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Ex: Lote 15 / Quadra 7"
-                      {...field}
-                      className={`rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
-                        form.formState.errors.propertyInterest ? "border-red-500" : ""
-                      }`}
-                      onBlur={(e) => {
-                        field.onBlur()
-                        form.trigger("propertyInterest")
+              <FormField
+                control={form.control}
+                name="clientPhone"
+                render={({ field: { onChange, ...field } }) => (
+                  <FormItem>
+                    <FormLabel>Telefone/WhatsApp do Cliente</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="(00)00000-0000"
+                        {...field}
+                        onChange={(e) => {
+                          const formatted = formatPhoneNumber(e.target.value)
+                          e.target.value = formatted
+                          onChange(e)
+                        }}
+                        className="rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="clientEmail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email do Cliente</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="email@exemplo.com"
+                        {...field}
+                        className={`rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
+                          form.formState.errors.clientEmail ? "border-red-500" : ""
+                        }`}
+                        onBlur={(e) => {
+                          field.onBlur()
+                          form.trigger("clientEmail")
+                        }}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          if (e.target.value.includes("@")) {
+                            form.trigger("clientEmail")
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="pt-4 border-t border-gray-200 space-y-6">
+              <h2 className="text-lg font-medium text-gray-900">Informações do Corretor</h2>
+
+              <FormField
+                control={form.control}
+                name="agentName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome do Corretor</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value)
+                        form.trigger("agentName")
                       }}
-                      onChange={(e) => {
-                        field.onChange(e)
-                        if (e.target.value.length > 3) {
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          className={`rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
+                            form.formState.errors.agentName ? "border-red-500" : ""
+                          }`}
+                        >
+                          <SelectValue placeholder="Selecione um corretor" />
+                          <ChevronDown className="h-4 w-4 opacity-50" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="William">William</SelectItem>
+                        <SelectItem value="Fábio">Fábio</SelectItem>
+                        <SelectItem value="Maria Fernanda">Maria Fernanda</SelectItem>
+                        <SelectItem value="Paula">Paula</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="agentPhone"
+                render={({ field: { onChange, ...field } }) => (
+                  <FormItem>
+                    <FormLabel>Telefone do Corretor</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="(00)00000-0000"
+                        {...field}
+                        onChange={(e) => {
+                          const formatted = formatPhoneNumber(e.target.value)
+                          e.target.value = formatted
+                          onChange(e)
+                        }}
+                        className="rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="agentEmail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email do Corretor</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="corretor@exemplo.com"
+                        {...field}
+                        className={`rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
+                          form.formState.errors.agentEmail ? "border-red-500" : ""
+                        }`}
+                        onBlur={(e) => {
+                          field.onBlur()
+                          form.trigger("agentEmail")
+                        }}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          if (e.target.value.includes("@")) {
+                            form.trigger("agentEmail")
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="pt-4 border-t border-gray-200 space-y-6">
+              <h2 className="text-lg font-medium text-gray-900">Informações do Imóvel</h2>
+
+              <FormField
+                control={form.control}
+                name="propertyInterest"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Terreno de Interesse (Lote/Quadra)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Ex: Lote 15 / Quadra 7"
+                        {...field}
+                        className={`rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 ${
+                          form.formState.errors.propertyInterest ? "border-red-500" : ""
+                        }`}
+                        onBlur={(e) => {
+                          field.onBlur()
                           form.trigger("propertyInterest")
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                        }}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          if (e.target.value.length > 3) {
+                            form.trigger("propertyInterest")
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="observations"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Observações</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Informações adicionais sobre o cliente ou interesse"
-                      {...field}
-                      className="rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-[100px]"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="observations"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observações</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Informações adicionais sobre o cliente ou interesse"
+                        {...field}
+                        className="rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-[100px]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
