@@ -222,7 +222,7 @@ export default function LeadRegistrationForm() {
                       <SelectItem value="Vladimir Lima">Vladimir Lima</SelectItem>
                       <SelectItem value="Anderson Bertola">Anderson Bertola</SelectItem>
                       <SelectItem value="William Fidencio">William Fidencio</SelectItem>
-                      <SelectItem value="Eric Nice">Eric Nice - (11) 95050 7175</SelectItem>
+                      <SelectItem value="Eric Nice">Eric Nice - (11) 95050 7175 - ericnice1@gmail.com</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
